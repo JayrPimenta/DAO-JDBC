@@ -50,12 +50,8 @@ public class VendedorDaoJDBC implements VendedorDao{
 			resultSet = preparedStatement.executeQuery();
 			
 			if(resultSet.next()) {
-				Departamento departamento = new Departamento(resultSet.getInt("DepartamentoId"), resultSet.getString("DepNome"));
-				Vendedor vendedor = new Vendedor(resultSet.getInt("Id"), 
-						resultSet.getString("Nome"),
-						resultSet.getString("Email"),
-						resultSet.getDate("DataNascimento"),
-						resultSet.getDouble("SalarioBase"), departamento);
+				Departamento departamento = iniciarDepartamento(resultSet);
+				Vendedor vendedor = iniciarVendedor(resultSet, departamento);
 				return vendedor;
 				
 			}
@@ -74,6 +70,20 @@ public class VendedorDaoJDBC implements VendedorDao{
 	public List<Vendedor> listarTodosOsVendedores() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	private Departamento iniciarDepartamento(ResultSet resultSet) throws SQLException {
+		Departamento departamento = new Departamento(resultSet.getInt("DepartamentoId"), resultSet.getString("DepNome"));
+		return departamento;
+	}
+	
+	private Vendedor iniciarVendedor(ResultSet resultSet, Departamento departamento) throws SQLException {
+		Vendedor vendedor = new Vendedor(resultSet.getInt("Id"), 
+				resultSet.getString("Nome"),
+				resultSet.getString("Email"),
+				resultSet.getDate("DataNascimento"),
+				resultSet.getDouble("SalarioBase"), departamento);
+		return vendedor;
 	}
 	
 
