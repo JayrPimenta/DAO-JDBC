@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -40,7 +43,6 @@ public class VendedorDaoJDBC implements VendedorDao{
 
 	@Override
 	public Vendedor localizarVendedorPeloId(Integer id) {
-		// 
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
@@ -66,11 +68,72 @@ public class VendedorDaoJDBC implements VendedorDao{
 		}
 	}
 
+	// Corrigir depois apartir da aula 250
 	@Override
 	public List<Vendedor> listarTodosOsVendedores() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			
+			preparedStatement = conexao.prepareStatement("SELECT vendedores.*,departamento.nome as DepNome From vendedores INNER JOIN departamento ON vendedores.DepartamentoId = departamento.Id");
+			resultSet = preparedStatement.executeQuery();
+			
+			Map<Integer, Departamento> map = new HashMap<>();
+			List<Vendedor> vendedores = new ArrayList<>();
+
+			while(resultSet.next()) {
+				
+				Departamento departamento = map.get(resultSet.getInt("DepartamentoId"));
+				
+				if(departamento == null) {
+					departamento = iniciarDepartamento(resultSet);
+					map.put(resultSet.getInt("DepartamentoId"), departamento);
+				}
+				vendedores.add(iniciarVendedor(resultSet, departamento));
+				
+			}
+			return vendedores;
+			
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+			DB.fecharResultSet(resultSet);
+		}
 	}
+	
+	@Override
+	public List<Vendedor> listarPorDepartamento(Integer departamentoId) {
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		List<Vendedor> listaDeVendedores = new ArrayList<>();
+		try {
+			
+			preparedStatement = conexao.prepareStatement("SELECT vendedores.*,departamento.nome as DepNome From vendedores INNER JOIN departamento ON vendedores.DepartamentoId = departamento.Id WHERE DepartamentoId = ? ORDER BY Nome");
+			preparedStatement.setInt(1, departamentoId);
+			resultSet = preparedStatement.executeQuery();
+			Departamento departamento = null;
+			
+			while(resultSet.next()) {
+				
+				if (departamento == null) {
+					departamento = iniciarDepartamento(resultSet);
+				}
+				
+				listaDeVendedores.add(iniciarVendedor(resultSet, departamento));	
+			}
+			return listaDeVendedores;
+			
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+			DB.fecharResultSet(resultSet);
+		}
+	}
+	
 	
 	private Departamento iniciarDepartamento(ResultSet resultSet) throws SQLException {
 		Departamento departamento = new Departamento(resultSet.getInt("DepartamentoId"), resultSet.getString("DepNome"));
@@ -85,6 +148,10 @@ public class VendedorDaoJDBC implements VendedorDao{
 				resultSet.getDouble("SalarioBase"), departamento);
 		return vendedor;
 	}
+
+
+
+
 	
 
 }
