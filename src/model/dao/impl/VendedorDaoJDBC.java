@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,19 +26,74 @@ public class VendedorDaoJDBC implements VendedorDao{
 
 	@Override
 	public void insertVendedor(Vendedor vendedor) {
-		// TODO Auto-generated method stub
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = conexao.prepareStatement("INSERT INTO vendedores (Nome, Email, DataNascimento, SalarioBase, DepartamentoId) VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			preparedStatement.setString(1, vendedor.getNome());
+			preparedStatement.setString(2, vendedor.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(vendedor.getDataNascimento().getTime()));
+			preparedStatement.setDouble(4, vendedor.getSalarioBase());
+			preparedStatement.setInt(5, vendedor.getDepartamento().getId());
+			
+			int linhasAfetadas = preparedStatement.executeUpdate();
+			
+			if(linhasAfetadas > 0) {
+				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				if(resultSet.next()) {
+					vendedor.setId(resultSet.getInt(1));
+				}
+				DB.fecharResultSet(resultSet);
+			} else {
+				throw new DbException("Erro inesperado: Nenhuma linha afetada");
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+		}
 		
 	}
 
 	@Override
-	public void updateVendedor(Vendedor vendedor) {
-		// TODO Auto-generated method stub
-		
+	public void updateVendedor(Vendedor vendedor) { 
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = conexao.prepareStatement("UPDATE vendedores SET Nome = ?, Email = ?, DataNascimento = ?, SalarioBase = ?, DepartamentoId = ? WHERE Id = ?");
+			preparedStatement.setString(1, vendedor.getNome());
+			preparedStatement.setString(2, vendedor.getEmail());
+			preparedStatement.setDate(3, new java.sql.Date(vendedor.getDataNascimento().getTime()));
+			preparedStatement.setDouble(4, vendedor.getSalarioBase());
+			preparedStatement.setInt(5, vendedor.getDepartamento().getId());
+			preparedStatement.setInt(6, vendedor.getId());
+			
+			preparedStatement.executeUpdate();
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+		}
 	}
 
 	@Override
 	public void deletarVendedorPeloId(Integer id) {
-		// TODO Auto-generated method stub
+		PreparedStatement preparedStatement = null;
+		try {
+			
+			preparedStatement = conexao.prepareStatement("DELETE FROM vendedores WHERE Id = ?");
+			preparedStatement.setInt(1, id);
+			int retornoDoDelete = preparedStatement.executeUpdate();
+			
+			if(retornoDoDelete == 0) {
+				throw new DbException("Cadastro de vendedor solicitado não encontrado");
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+		}
 		
 	}
 
@@ -68,14 +124,13 @@ public class VendedorDaoJDBC implements VendedorDao{
 		}
 	}
 
-	// Corrigir depois apartir da aula 250
 	@Override
 	public List<Vendedor> listarTodosOsVendedores() {
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
 			
-			preparedStatement = conexao.prepareStatement("SELECT vendedores.*,departamento.nome as DepNome From vendedores INNER JOIN departamento ON vendedores.DepartamentoId = departamento.Id");
+			preparedStatement = conexao.prepareStatement("SELECT vendedores.*,departamento.nome as DepNome From vendedores INNER JOIN departamento ON vendedores.DepartamentoId = departamento.Id ORDER BY Nome");
 			resultSet = preparedStatement.executeQuery();
 			
 			Map<Integer, Departamento> map = new HashMap<>();
