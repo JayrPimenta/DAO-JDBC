@@ -36,7 +36,7 @@ public class ProgramaVendedor {
 		System.out.println();
 		System.out.println("=============== Insert =======================================");
 		
-		vendedor = new Vendedor(null, "Joice", "joice.pimenta@gmail.com", new Date(), 5500.0, new Departamento(4, "Livros"));
+		vendedor = new Vendedor(null, "Roberto Lopes", "roberto@gmail.com", new Date(), 5500.0, new Departamento(4, "Livros"));
 		vendedorDao.insertVendedor(vendedor);
 		System.out.println("Cadastrado no vendedor, ID: " + vendedor.getId());
 		
@@ -51,7 +51,7 @@ public class ProgramaVendedor {
 		System.out.println();
 		System.out.println("=============== Delete =======================================");
 		
-		int idVendedor = 12;
+		int idVendedor = 14;
 		vendedorDao.deletarVendedorPeloId(idVendedor);
 		System.out.println("Cadastro do vendedor ID: "+ idVendedor + " foi deletado com sucesso!");
 	}

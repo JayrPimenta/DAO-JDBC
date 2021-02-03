@@ -30,10 +30,21 @@ public class ProgramaDepartamento {
 		
 		System.out.println();
 		System.out.println("=============== Insert =======================================");
-		departamento = new Departamento(null, "Musica");
+		departamento = new Departamento(null, "Nada");
 		departamentoDao.insertDepartamento(departamento);
 		System.out.println("Adicionado novo departamento ID: "+ departamento.getId() + " Nome: "+ departamento.getNome());
 		
+		System.out.println();
+		System.out.println("=============== Update =======================================");
+		departamento = new Departamento(7, "Comida");
+		departamentoDao.updateDepartamento(departamento);;
+		System.out.println("Adicionado novo departamento ID: "+ departamento.getId() + " Nome: "+ departamento.getNome());
+		
+		System.out.println();
+		System.out.println("=============== Delete =======================================");
+		int codigoDepartamento = 8;
+		departamentoDao.deletarDepartamentoPeloId(codigoDepartamento);
+		System.out.println("Departamento codigo: "+ codigoDepartamento + " foi deletado com sucesso!");
 		
 		
 	}

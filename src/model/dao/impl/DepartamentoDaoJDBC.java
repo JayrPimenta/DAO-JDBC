@@ -10,6 +10,7 @@ import java.util.List;
 
 import db.DB;
 import db.DbException;
+import db.DbIntegrityException;
 import model.dao.DepartamentoDao;
 import model.entidades.Departamento;
 
@@ -25,12 +26,9 @@ public class DepartamentoDaoJDBC implements DepartamentoDao{
 	public void insertDepartamento(Departamento departamento) {
 		PreparedStatement preparedStatement = null;
 		try {
-			
 			preparedStatement = conexao.prepareStatement("INSERT INTO departamento SET Nome = ?", Statement.RETURN_GENERATED_KEYS);
 			preparedStatement.setString(1, departamento.getNome());
-			
 			int linhasAfetadas = preparedStatement.executeUpdate();
-			
 			if(linhasAfetadas > 0) {
 				ResultSet resultSet = preparedStatement.getGeneratedKeys();
 				if(resultSet.next()) {
@@ -40,7 +38,6 @@ public class DepartamentoDaoJDBC implements DepartamentoDao{
 			} else {
 				throw new DbException("Erro inesperado: Nenhuma linha afetada");
 			}
-			
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
@@ -50,13 +47,37 @@ public class DepartamentoDaoJDBC implements DepartamentoDao{
 
 	@Override
 	public void updateDepartamento(Departamento departamento) {
-		// TODO Auto-generated method stub
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = conexao.prepareStatement("UPDATE departamento SET Nome = ? WHERE Id = ? ");
+			preparedStatement.setString(1, departamento.getNome());
+			preparedStatement.setInt(2, departamento.getId());
+			preparedStatement.executeUpdate();	
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+		}
 		
 	}
 
 	@Override
 	public void deletarDepartamentoPeloId(Integer id) {
-		// TODO Auto-generated method stub
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = conexao.prepareStatement("DELETE FROM departamento WHERE Id = ? ");
+			preparedStatement.setInt(1, id);
+			int retornoDoDelete = preparedStatement.executeUpdate();	
+			
+			if(retornoDoDelete == 0) {
+				throw new DbException("Codigo de departamento não encontrado");
+			}
+			
+		} catch (SQLException e) {
+			throw new DbIntegrityException(e.getMessage());
+		} finally {
+			DB.fecharStatement(preparedStatement);
+		}
 		
 	}
 
@@ -65,19 +86,14 @@ public class DepartamentoDaoJDBC implements DepartamentoDao{
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
-			
 			preparedStatement = conexao.prepareStatement("SELECT * FROM departamento WHERE Id = ?");
 			preparedStatement.setInt(1, id);
 			resultSet = preparedStatement.executeQuery();
 			Departamento departamento = null;
-
 			if(resultSet.next()) {
 				departamento = iniciarDepartamento(resultSet);
 			}
-			
 			return departamento;
-			
-			
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
@@ -91,19 +107,13 @@ public class DepartamentoDaoJDBC implements DepartamentoDao{
 		PreparedStatement preparedStatement = null;
 		ResultSet resultSet = null;
 		try {
-			
 			preparedStatement = conexao.prepareStatement("SELECT * FROM departamento");
 			resultSet = preparedStatement.executeQuery();
-			
 			List<Departamento> listaDeDepartamentos = new ArrayList<>();
-			
 			while(resultSet.next()) {
 				listaDeDepartamentos.add(iniciarDepartamento(resultSet));
 			}
-			
 			return listaDeDepartamentos;
-			
-			
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
