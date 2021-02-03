@@ -8,7 +8,7 @@ import model.dao.VendedorDao;
 import model.entidades.Departamento;
 import model.entidades.Vendedor;
 
-public class Programa {
+public class ProgramaVendedor {
 
 	public static void main(String[] args) {
 		
